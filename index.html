@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samyam Dhamala — QA Automation Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="nav-brand">samyam<span>@</span>qa</div>
+    <ul class="nav-links">
+      <li><a href="#about">about</a></li>
+      <li><a href="#skills">skills</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="status-line"><span class="dot"></span> run: portfolio.spec &nbsp;·&nbsp; status: passing &nbsp;·&nbsp; united states</div>
+    <h1>Samyam Dhamala</h1>
+    <div class="role">QA Automation Engineer</div>
+    <p class="tagline">I design and build scalable automation frameworks for web and API systems — turning fragile manual checks into fast, trustworthy CI/CD pipelines.</p>
+    <div class="hero-meta">
+      <a href="https://github.com/samyamdhamala" target="_blank" rel="noopener">github.com/samyamdhamala</a>
+      <span class="sep">/</span>
+      <a href="https://linkedin.com/in/samyamdhamala" target="_blank" rel="noopener">linkedin.com/in/samyamdhamala</a>
+      <span class="sep">/</span>
+      <a href="mailto:samdhamala727@gmail.com">samdhamala727@gmail.com</a>
+    </div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-label">Profile</div>
+    <div class="section-title">About</div>
+    <p class="about-text">
+      I'm a QA automation engineer focused on building test infrastructure that scales with a product —
+      not just scripts that pass once. My work spans API contract &amp; functional testing, cross-browser
+      end-to-end suites, performance/load testing, and wiring all of it into CI/CD so quality signals show
+      up on every push rather than once a sprint. I've also been exploring how AI can take the grunt work
+      out of QA operations, like automatically triaging incoming bug reports.
+    </p>
+    <div class="stats-row">
+      <div class="stat-block"><div class="stat-num">9+</div><div class="stat-label">Automation projects</div></div>
+      <div class="stat-block"><div class="stat-num">3</div><div class="stat-label">Browsers covered in E2E</div></div>
+      <div class="stat-block"><div class="stat-num">500</div><div class="stat-label">Concurrent users load-tested</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="section-label">Stack</div>
+    <div class="section-title">Skills</div>
+
+    <div class="skill-group">
+      <div class="skill-group-label">Test Automation</div>
+      <div class="skill-chips">
+        <span class="chip">Playwright</span><span class="chip">Cypress</span><span class="chip">Selenium</span><span class="chip">Postman</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="skill-group-label">Performance</div>
+      <div class="skill-chips">
+        <span class="chip">k6</span><span class="chip">JMeter</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="skill-group-label">Languages</div>
+      <div class="skill-chips">
+        <span class="chip">Python</span><span class="chip">TypeScript</span><span class="chip">JavaScript</span><span class="chip">C#</span><span class="chip">C++</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="skill-group-label">Platform &amp; Tooling</div>
+      <div class="skill-chips">
+        <span class="chip">GitHub Actions</span><span class="chip">Docker</span><span class="chip">Git</span><span class="chip">JIRA</span><span class="chip">FastAPI</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="wrap">
+    <div class="section-label">CI / CD</div>
+    <div class="section-title">Projects</div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <a class="ci-badge" href="https://github.com/samyamdhamala/api-contract-testing/actions" target="_blank" rel="noopener" title="Live CI status from GitHub Actions">
+            <img src="https://img.shields.io/github/actions/workflow/status/samyamdhamala/api-contract-testing/ci.yml?branch=main&label=CI&style=flat-square&color=3FB950&labelColor=151C24" alt="CI status: api-contract-testing">
+          </a>
+          <h3>api-contract-testing</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/api-contract-testing" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>Validates REST API responses against JSON Schemas for JSONPlaceholder, covering positive contract checks plus mocked negative cases for missing fields, wrong types, and unexpected properties.</p>
+        <div class="tag-row">
+          <span class="tag">Python</span><span class="tag">pytest</span><span class="tag">jsonschema</span><span class="tag">GitHub Actions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <a class="ci-badge" href="https://github.com/samyamdhamala/api-test-suite/actions" target="_blank" rel="noopener" title="Live CI status from GitHub Actions">
+            <img src="https://img.shields.io/github/actions/workflow/status/samyamdhamala/api-test-suite/tests.yml?branch=main&label=CI&style=flat-square&color=3FB950&labelColor=151C24" alt="CI status: api-test-suite">
+          </a>
+          <h3>api-test-suite</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/api-test-suite" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>Automated CRUD test suite for a public REST API: status codes, headers, schema validation, boundary IDs, error handling, and a smoke-test subset — all running on every push via GitHub Actions.</p>
+        <div class="tag-row">
+          <span class="tag">Python</span><span class="tag">pytest</span><span class="tag">pytest-html</span><span class="tag">CI/CD</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <span class="status-badge status-badge--none" title="No GitHub Actions workflow configured in this repo">no CI</span>
+          <h3>performance-testing-cdf</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/performance-testing-cdf" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>Load testing suite simulating up to 500 concurrent users across low, medium, and stress scenarios, with JSON output and a full written report plus visual charts of the results.</p>
+        <div class="tag-row">
+          <span class="tag">k6</span><span class="tag">JavaScript</span><span class="tag">Load Testing</span>
+        </div>
+        <div class="metrics-row">
+          <span><b>500</b> peak concurrent users</span>
+          <span><b>3</b> load scenarios</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <a class="ci-badge" href="https://github.com/samyamdhamala/e2e-playwright-ci/actions" target="_blank" rel="noopener" title="Live CI status from GitHub Actions">
+            <img src="https://img.shields.io/github/actions/workflow/status/samyamdhamala/e2e-playwright-ci/playwright.yml?branch=main&label=CI&style=flat-square&color=3FB950&labelColor=151C24" alt="CI status: e2e-playwright-ci">
+          </a>
+          <h3>e2e-playwright-ci</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/e2e-playwright-ci" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>11 end-to-end test cases for saucedemo.com — auth, cart, sorting, checkout — run across Chromium, Firefox, and WebKit on every push, with Allure reports published to GitHub Pages.</p>
+        <div class="tag-row">
+          <span class="tag">TypeScript</span><span class="tag">Playwright</span><span class="tag">Allure</span><span class="tag">GitHub Pages</span>
+        </div>
+        <div class="metrics-row">
+          <span><b>11</b> test cases</span>
+          <span><b>3</b> browsers (Chromium / Firefox / WebKit)</span>
+          <span><b>33</b> executions per run</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <span class="status-badge status-badge--none" title="No GitHub Actions workflow configured in this repo">no CI</span>
+          <h3>bug-triage-ai</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="bug-triage-ai.html">case study</a>
+          <a href="https://github.com/samyamdhamala/bug-triage-ai" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>An MVP that turns messy bug reports from Slack, email, or notes into structured, severity-scored, Jira-style tickets — with confidence scoring and duplicate detection to keep a human in the loop.</p>
+        <div class="tag-row">
+          <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Streamlit</span><span class="tag">OpenAI / Groq / Gemini</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <span class="status-badge status-badge--none" title="No GitHub Actions workflow configured in this repo">no CI</span>
+          <h3>qa-db-debug-test</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/qa-db-debug-test" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>A containerized database testing &amp; debugging harness — SQL-driven setup, a Dockerized run environment, and shell-orchestrated test execution for reproducible QA against a live database.</p>
+        <div class="tag-row">
+          <span class="tag">JavaScript</span><span class="tag">Docker</span><span class="tag">SQL</span><span class="tag">Shell</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <span class="status-badge status-badge--none" title="No GitHub Actions workflow configured in this repo">no CI</span>
+          <h3>Cha-Ching</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/Cha-Ching" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>A personal expense tracker with secure login, category management, monthly budgets with overspend warnings, and admin/user roles — all persisted to JSON with no external database required.</p>
+        <div class="tag-row">
+          <span class="tag">Python</span><span class="tag">Auth</span><span class="tag">File Storage</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <span class="status-badge status-badge--none" title="No GitHub Actions workflow configured in this repo">no CI</span>
+          <h3>E-States Nepal</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/E-States-Nepal-Overview" target="_blank" rel="noopener">overview</a>
+          <a href="https://github.com/samyamdhamala/e-statesfront" target="_blank" rel="noopener">frontend</a>
+          <a href="https://github.com/samyamdhamala/e-statesnepal" target="_blank" rel="noopener">backend</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>A full-stack property listing platform for Nepal's real-estate market: browsing, search, filtering, GPS-tagged listings, and JWT-secured auth across a Flutter app and Express/MySQL backend.</p>
+        <div class="tag-row">
+          <span class="tag">Flutter</span><span class="tag">Express.js</span><span class="tag">MySQL</span><span class="tag">JWT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-title">
+          <span class="status-badge status-badge--none" title="No GitHub Actions workflow configured in this repo">no CI</span>
+          <h3>sorting-algorithms</h3>
+        </div>
+        <div class="job-card-links">
+          <a href="https://github.com/samyamdhamala/sorting-algorithms" target="_blank" rel="noopener">repo</a>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p>Empirical performance analysis of six classic sorting algorithms in C++ — bubble, selection, insertion, merge, quick, and shell sort — benchmarked against random, sorted, and reverse-sorted datasets from 25,000 up to 500,000 elements. Coursework for CSCI-6620: Data Structures and Algorithms, University of New Haven.</p>
+        <div class="tag-row">
+          <span class="tag">C++</span><span class="tag">STL</span><span class="tag">Benchmarking</span>
+        </div>
+        <div class="metrics-row">
+          <span><b>6</b> algorithms compared</span>
+          <span>Up to <b>500,000</b> elements</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="section-label">Reach out</div>
+    <div class="section-title">Contact</div>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <div class="k">Email</div>
+        <div class="v"><a href="mailto:samdhamala727@gmail.com">samdhamala727@gmail.com</a></div>
+      </div>
+      <div class="contact-item">
+        <div class="k">GitHub</div>
+        <div class="v"><a href="https://github.com/samyamdhamala" target="_blank" rel="noopener">samyamdhamala</a></div>
+      </div>
+      <div class="contact-item">
+        <div class="k">LinkedIn</div>
+        <div class="v"><a href="https://linkedin.com/in/samyamdhamala" target="_blank" rel="noopener">in/samyamdhamala</a></div>
+      </div>
+      <div class="contact-item">
+        <div class="k">GitLab</div>
+        <div class="v"><a href="https://gitlab.com/samyamdhamala" target="_blank" rel="noopener">samyamdhamala</a></div>
+      </div>
+    </div>
+    <div class="foot-note">// built and deployed the same way the projects above were tested: pushed to main, checked by CI.</div>
+  </div>
+</footer>
+
+</body>
+</html>

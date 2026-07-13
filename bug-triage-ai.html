@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study: bug-triage-ai — Samyam Dhamala</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="nav-brand">samyam<span>@</span>qa</div>
+    <ul class="nav-links">
+      <li><a href="index.html#projects">back to projects</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="cs-hero">
+  <div class="wrap">
+    <a class="back-link" href="index.html#projects">&larr; portfolio</a>
+    <div class="cs-kicker">Case Study</div>
+    <h1>bug-triage-ai</h1>
+    <p class="tagline">Turning unstructured bug reports into severity-scored, Jira-ready tickets in seconds — with a confidence gate that keeps a human in the loop on anything uncertain.</p>
+    <div class="cs-links">
+      <a href="https://github.com/samyamdhamala/bug-triage-ai" target="_blank" rel="noopener">github.com/samyamdhamala/bug-triage-ai</a>
+      <span class="sep">/</span>
+      <span class="status-badge status-badge--none">no CI</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="cs-block">
+      <div class="section-label">01</div>
+      <h2>The problem</h2>
+      <p>Bug intake is manual, inconsistent, and slow. Reports arrive scattered across Slack, email, and raw notes, each written differently, and someone has to read, interpret, and rewrite every one of them into a structured ticket before an engineer can act on it. That translation step is where triage time actually goes.</p>
+      <p>This MVP automates that translation: raw text in, a structured Jira-style ticket out, in seconds instead of minutes — while keeping a human explicitly in the loop on anything the model isn't confident about.</p>
+    </div>
+
+    <div class="cs-block">
+      <div class="section-label">02</div>
+      <h2>Architecture</h2>
+      <p>A three-tier pipeline: an intake surface (Streamlit UI or a Slack <code>/triage</code> command), a FastAPI backend that owns the LLM abstraction and triage logic, and a deterministic post-processing layer that applies rules an LLM shouldn't be trusted to get consistently right on its own.</p>
+      <div class="flow-diagram">[ Streamlit UI ]  or  [ Slack #bugs · /triage ]
+        │
+        ▼
+<b>FastAPI backend</b>  ──►  LLM layer (provider-agnostic)
+        │                     OpenAI · Groq · Gemini
+        ▼
+<b>Post-LLM deterministic rules</b>
+   team routing · label injection
+        │
+        ▼
+<b>Confidence gate</b>
+   <span class="pass">High</span>   → auto-file ticket
+   <span class="amber">Medium</span> → quick human scan
+   <span class="amber">Low</span>    → blocked, routed to a human
+        │
+        ▼
+[ JSON export ]  +  [ Jira ticket, with duplicate pre-check ]</div>
+      <p>The repo is split cleanly along this pipeline: <code>backend/</code> for the FastAPI service and LLM abstraction, <code>frontend/</code> for the Streamlit demo UI, <code>prompt.txt</code> holding the exact LLM instructions as a reviewable artifact rather than a buried string, and <code>outputs/</code> for the serialized JSON results.</p>
+    </div>
+
+    <div class="cs-block">
+      <div class="section-label">03</div>
+      <h2>Key decisions &amp; tradeoffs</h2>
+      <ul class="decision-list">
+        <li class="decision-item">
+          <div class="d-title">Provider-agnostic LLM layer</div>
+          <p>Supports OpenAI (GPT-4o-mini), Groq (Llama 3.1-70B), and Gemini behind one interface, configured via <code>.env</code> (<code>LLM_PROVIDER</code> + API key). Costs a bit of abstraction overhead but means swapping providers for cost or latency reasons never touches the frontend or backend logic.</p>
+        </li>
+        <li class="decision-item">
+          <div class="d-title">Deterministic rules after the LLM, not inside it</div>
+          <p>Team routing and label injection happen in plain code after the model responds, instead of being folded into the prompt. It's more code to maintain when org structure changes, but it removes an entire class of hallucination risk from a decision that has to be consistent every time.</p>
+        </li>
+        <li class="decision-item">
+          <div class="d-title">Three-tier confidence gate instead of pass/fail</div>
+          <p>Every ticket gets scored High, Medium, or Low rather than a binary accept/reject. Medium gets a quick human scan; Low is blocked from auto-creation entirely. It trades full automation for something that fails safe.</p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="cs-block">
+      <div class="section-label">04</div>
+      <h2>Confidence scoring &amp; severity rubric</h2>
+      <p>Severity and confidence are both surfaced explicitly on every generated ticket, so a reviewer can tell at a glance what needs attention. A well-structured report scores High; a vague one automatically scores Low. The one hard rule that overrides the gate: <strong>P1-severity tickets always get reviewed, regardless of confidence.</strong></p>
+      <div class="example-block">
+<span class="k">Title:</span>       Login hangs on spinner after credential entry
+<span class="k">Severity:</span>    P2
+<span class="k">Confidence:</span>  High
+<span class="k">Component:</span>   Auth</div>
+    </div>
+
+    <div class="cs-block">
+      <div class="section-label">05</div>
+      <h2>Duplicate detection</h2>
+      <p>Before filing, the system searches open Jira tickets by label to catch obvious repeats. It's a deliberately shallow first pass — label matching rather than semantic similarity — which is an acknowledged limitation, not an oversight. Vector-similarity matching is the next planned iteration once the label-based version proves out the rest of the pipeline.</p>
+    </div>
+
+    <div class="cs-block">
+      <div class="section-label">06</div>
+      <h2>Where it can fail</h2>
+      <p>Documented openly in the README rather than glossed over — the honesty here was intentional, since a triage tool that hides its own failure modes is worse than a manual process.</p>
+      <ul class="warn-list">
+        <li class="warn-item"><b>Guessed repro steps</b>Generated reproduction steps are inferred from the report text and need human validation before they're trusted.</li>
+        <li class="warn-item"><b>Multi-bug reports</b>A single report describing several distinct bugs isn't split automatically — it's treated as one ticket.</li>
+        <li class="warn-item"><b>Retry logic is syntactic, not semantic</b>Auto-retry catches JSON parsing failures, not cases where the model's reasoning itself is wrong.</li>
+      </ul>
+    </div>
+
+    <div class="cs-block">
+      <div class="section-label">07</div>
+      <h2>Takeaway</h2>
+      <p class="pull-quote">Operational velocity and explainability, not perfect automation — composing LLM extraction with deterministic rules and a confidence gate to capture real intake gains without spamming the tracker with false positives.</p>
+      <div class="tag-row cs-tags-spaced">
+        <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Streamlit</span><span class="tag">Slack API</span><span class="tag">Jira API</span><span class="tag">OpenAI</span><span class="tag">Groq</span><span class="tag">Gemini</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="back-link" href="index.html#projects">&larr; back to portfolio</a>
+    <div class="foot-note">bug-triage-ai · <a href="https://github.com/samyamdhamala/bug-triage-ai" target="_blank" rel="noopener">view source</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
