@@ -25,7 +25,7 @@
     <a class="back-link" href="index.html#projects">&larr; portfolio</a>
     <div class="cs-kicker">Case Study</div>
     <h1>bug-triage-ai</h1>
-    <p class="tagline">Turning unstructured bug reports into severity-scored, Jira-ready tickets in seconds — with a confidence gate that keeps a human in the loop on anything uncertain.</p>
+    <p class="tagline">Turning unstructured bug reports — and now raw CI test failures — into severity-scored, Jira-ready tickets in seconds, with semantic duplicate detection and a confidence gate that keeps a human in the loop on anything uncertain.</p>
     <div class="cs-links">
       <a href="https://github.com/samyamdhamala/bug-triage-ai" target="_blank" rel="noopener">github.com/samyamdhamala/bug-triage-ai</a>
       <span class="sep">/</span>
@@ -41,22 +41,26 @@
     <div class="cs-block">
       <div class="section-label">01</div>
       <h2>The problem</h2>
-      <p>Bug intake is manual, inconsistent, and slow. Reports arrive scattered across Slack, email, and raw notes, each written differently, and someone has to read, interpret, and rewrite every one of them into a structured ticket before an engineer can act on it. That translation step is where triage time actually goes.</p>
-      <p>This MVP automates that translation: raw text in, a structured Jira-style ticket out, in seconds instead of minutes — while keeping a human explicitly in the loop on anything the model isn't confident about.</p>
+      <p>Bug intake is manual, inconsistent, and slow. Reports arrive scattered across Slack, email, and raw notes — and just as often as a wall of failing CI output — each in a different shape, and someone has to read, interpret, and rewrite every one of them into a structured ticket before an engineer can act on it. That translation step is where triage time actually goes.</p>
+      <p>This system automates that translation across every intake path: raw text or a JUnit XML failure report in, a structured, deduplicated, severity-scored ticket out, in seconds instead of minutes — while keeping a human explicitly in the loop on anything the model isn't confident about.</p>
     </div>
 
     <div class="cs-block">
       <div class="section-label">02</div>
       <h2>Architecture</h2>
-      <p>A three-tier pipeline: an intake surface (Streamlit UI or a Slack <code>/triage</code> command), a FastAPI backend that owns the LLM abstraction and triage logic, and a deterministic post-processing layer that applies rules an LLM shouldn't be trusted to get consistently right on its own.</p>
-      <div class="flow-diagram">[ Streamlit UI ]  or  [ Slack #bugs · /triage ]
+      <p>Three intake surfaces feed one pipeline: a Streamlit UI, a Slack <code>/triage</code> command, and — new in v2 — a <code>POST /triage/ci</code> endpoint that ingests JUnit XML straight from a CI run. From there, a FastAPI backend owns the LLM abstraction and triage logic, followed by a deterministic rules layer and a two-layer duplicate check before anything reaches the confidence gate.</p>
+      <div class="flow-diagram">[ Streamlit UI ] · [ Slack /triage ] · [ CI: POST /triage/ci (JUnit XML) ]
         │
         ▼
-<b>FastAPI backend</b>  ──►  LLM layer (provider-agnostic)
-        │                     OpenAI · Groq · Gemini
+<b>FastAPI backend</b>  ──►  LLM layer (provider-agnostic, structured JSON output)
+        │                     OpenAI · Groq · Gemini · Ollama
         ▼
-<b>Post-LLM deterministic rules</b>
-   team routing · label injection
+<b>Deterministic rules engine</b>
+   team routing · severity escalation · test-area suggestions
+        │
+        ▼
+<b>Two-layer duplicate check</b>
+   local embeddings (cosine ≥0.68) → Jira semantic search (≥0.72)
         │
         ▼
 <b>Confidence gate</b>
@@ -65,8 +69,8 @@
    <span class="amber">Low</span>    → blocked, routed to a human
         │
         ▼
-[ JSON export ]  +  [ Jira ticket, with duplicate pre-check ]</div>
-      <p>The repo is split cleanly along this pipeline: <code>backend/</code> for the FastAPI service and LLM abstraction, <code>frontend/</code> for the Streamlit demo UI, <code>prompt.txt</code> holding the exact LLM instructions as a reviewable artifact rather than a buried string, and <code>outputs/</code> for the serialized JSON results.</p>
+[ JSON export ] + [ Jira ticket ] + [ <code>/feedback</code> correction replayed into future prompts ]</div>
+      <p>The repo is organized around this pipeline: <code>backend/triage.py</code> orchestrates prompt → LLM → parse → rules, <code>backend/llm_client.py</code> is the provider-agnostic LLM wrapper, <code>backend/rules.py</code> holds the deterministic routing/severity logic, <code>backend/vector_store.py</code> and <code>backend/jira_client.py</code> implement the two dedup layers, <code>backend/ci_parser.py</code> handles JUnit XML ingestion, and <code>backend/feedback_store.py</code> stores QA corrections that get replayed into later prompts.</p>
     </div>
 
     <div class="cs-block">
@@ -74,12 +78,24 @@
       <h2>Key decisions &amp; tradeoffs</h2>
       <ul class="decision-list">
         <li class="decision-item">
-          <div class="d-title">Provider-agnostic LLM layer</div>
-          <p>Supports OpenAI (GPT-4o-mini), Groq (Llama 3.1-70B), and Gemini behind one interface, configured via <code>.env</code> (<code>LLM_PROVIDER</code> + API key). Costs a bit of abstraction overhead but means swapping providers for cost or latency reasons never touches the frontend or backend logic.</p>
+          <div class="d-title">CI failures as a first-class input, not just human reports</div>
+          <p>The <code>/triage/ci</code> endpoint accepts JUnit XML plus branch/commit/run-URL metadata directly from a pipeline, so a red build gets the same structured triage as a Slack message. It turns the tool from "bug report formatter" into a triage layer that sits in front of both humans and CI.</p>
+        </li>
+        <li class="decision-item">
+          <div class="d-title">Two-layer semantic dedup over label matching</div>
+          <p>v1 matched duplicates by label only — a known, deliberate shortcut. v2 replaces it with local sentence-transformer embeddings (cosine ≥0.68) as a fast first pass, then a Jira semantic search (≥0.72) before filing. More infrastructure to run, but it catches paraphrased repeats that label matching structurally can't.</p>
+        </li>
+        <li class="decision-item">
+          <div class="d-title">Provider-agnostic LLM layer with enforced structured output</div>
+          <p>OpenAI, Groq, Gemini, and Ollama sit behind one interface in <code>llm_client.py</code>, swappable via <code>.env</code>, each forced into the same JSON schema regardless of the provider's native format. Costs abstraction overhead but means a provider swap for cost, latency, or even fully local inference never touches the rest of the pipeline.</p>
         </li>
         <li class="decision-item">
           <div class="d-title">Deterministic rules after the LLM, not inside it</div>
-          <p>Team routing and label injection happen in plain code after the model responds, instead of being folded into the prompt. It's more code to maintain when org structure changes, but it removes an entire class of hallucination risk from a decision that has to be consistent every time.</p>
+          <p>Team routing, severity escalation, and test-area suggestions happen in plain code after the model responds, instead of being folded into the prompt. More code to maintain when org structure changes, but it removes an entire class of hallucination risk from decisions that have to be consistent every time.</p>
+        </li>
+        <li class="decision-item">
+          <div class="d-title">QA feedback loop instead of retraining</div>
+          <p>A <code>/feedback BUG-42 &lt;correction&gt;</code> command stores QA corrections and replays them into future prompts. It's a cheap approximation of "learning" — no fine-tuning pipeline required — that lets the system absorb human judgment over time.</p>
         </li>
         <li class="decision-item">
           <div class="d-title">Three-tier confidence gate instead of pass/fail</div>
@@ -91,37 +107,40 @@
     <div class="cs-block">
       <div class="section-label">04</div>
       <h2>Confidence scoring &amp; severity rubric</h2>
-      <p>Severity and confidence are both surfaced explicitly on every generated ticket, so a reviewer can tell at a glance what needs attention. A well-structured report scores High; a vague one automatically scores Low. The one hard rule that overrides the gate: <strong>P1-severity tickets always get reviewed, regardless of confidence.</strong></p>
+      <p>Severity (P1–P4) and confidence are both surfaced explicitly on every generated ticket, so a reviewer can tell at a glance what needs attention. Deterministic rules bump severity when a report contains phrases like "all users" or "production down," and generated reproduction steps are prefixed <code>[generated]</code> as a signal they still need human validation. The one hard rule that overrides the gate: <strong>P1-severity tickets always get the <code>urgent-review</code> label, regardless of confidence.</strong></p>
       <div class="example-block">
 <span class="k">Title:</span>       Login hangs on spinner after credential entry
 <span class="k">Severity:</span>    P2
 <span class="k">Confidence:</span>  High
-<span class="k">Component:</span>   Auth</div>
+<span class="k">Component:</span>   Auth
+<span class="k">Team:</span>        Auth
+<span class="k">Test areas:</span>  auth_smoke, session_regression</div>
     </div>
 
     <div class="cs-block">
       <div class="section-label">05</div>
       <h2>Duplicate detection</h2>
-      <p>Before filing, the system searches open Jira tickets by label to catch obvious repeats. It's a deliberately shallow first pass — label matching rather than semantic similarity — which is an acknowledged limitation, not an oversight. Vector-similarity matching is the next planned iteration once the label-based version proves out the rest of the pipeline.</p>
+      <p>v1 only matched duplicates by label — an acknowledged shortcut, not a final answer. v2 replaces it with a two-layer semantic check: a local vector store (sentence-transformers) does a fast first pass at cosine similarity ≥0.68, then a Jira semantic search confirms against open tickets at ≥0.72 before anything gets filed. A match short-circuits ticket creation and surfaces the similarity score instead, so paraphrased repeats — "login times out" vs. "login hangs on spinner" — get caught instead of filed twice.</p>
     </div>
 
     <div class="cs-block">
       <div class="section-label">06</div>
       <h2>Where it can fail</h2>
-      <p>Documented openly in the README rather than glossed over — the honesty here was intentional, since a triage tool that hides its own failure modes is worse than a manual process.</p>
+      <p>Documented openly in the README rather than glossed over — the honesty here was intentional, since a triage tool that hides its own failure modes is worse than a manual process. Structured-output enforcement in v2 cut down JSON parsing failures significantly, but the remaining gaps are real:</p>
       <ul class="warn-list">
-        <li class="warn-item"><b>Guessed repro steps</b>Generated reproduction steps are inferred from the report text and need human validation before they're trusted.</li>
-        <li class="warn-item"><b>Multi-bug reports</b>A single report describing several distinct bugs isn't split automatically — it's treated as one ticket.</li>
-        <li class="warn-item"><b>Retry logic is syntactic, not semantic</b>Auto-retry catches JSON parsing failures, not cases where the model's reasoning itself is wrong.</li>
+        <li class="warn-item"><b>Guessed repro steps</b>Generated reproduction steps are inferred from the report text and prefixed <code>[generated]</code>, but still need human validation before they're trusted.</li>
+        <li class="warn-item"><b>Multi-bug reports get flattened</b>A report describing several distinct bugs now gets a note that it "contains multiple issues," but still triages to a single ticket at the most severe level rather than splitting automatically.</li>
+        <li class="warn-item"><b>No calibration or metrics yet</b>There's no dashboard tracking routing accuracy, confidence calibration, or bugs/day — the roadmap has it, but today the only feedback loop is the manual <code>/feedback</code> command.</li>
+        <li class="warn-item"><b>Storage is still flat JSON</b>Feedback, embeddings, and outputs all persist to local files, not Postgres. Fine at demo scale, a real constraint before this could run unattended in production.</li>
       </ul>
     </div>
 
     <div class="cs-block">
       <div class="section-label">07</div>
       <h2>Takeaway</h2>
-      <p class="pull-quote">Operational velocity and explainability, not perfect automation — composing LLM extraction with deterministic rules and a confidence gate to capture real intake gains without spamming the tracker with false positives.</p>
+      <p class="pull-quote">From MVP to a real triage layer: the same bet on operational velocity and explainability over full automation, now extended to meet bugs where they actually originate — a Slack message, a manual report, or a red CI pipeline — without losing the human-in-the-loop guarantees that made v1 trustworthy.</p>
       <div class="tag-row cs-tags-spaced">
-        <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Streamlit</span><span class="tag">Slack API</span><span class="tag">Jira API</span><span class="tag">OpenAI</span><span class="tag">Groq</span><span class="tag">Gemini</span>
+        <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Streamlit</span><span class="tag">Slack API</span><span class="tag">Jira API</span><span class="tag">OpenAI</span><span class="tag">Groq</span><span class="tag">Gemini</span><span class="tag">Ollama</span><span class="tag">sentence-transformers</span><span class="tag">JUnit XML</span><span class="tag">GitHub Actions</span>
       </div>
     </div>
   </div>
